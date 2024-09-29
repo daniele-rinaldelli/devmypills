@@ -7,74 +7,114 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public class QueueCoordinator<T> implements CoordinatorMXBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueueCoordinator.class);
-	private volatile boolean isProducerRunning = false;
-	private volatile boolean isConsumerRunning = false;
 
 	private final MessageProducer<T> producer;
 	private final MessageConsumer<T> consumer;
 
-	BlockingQueue<Message<T>> queue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<Thread> producerQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<Thread> consumerQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<Message<T>> dataQueue = new LinkedBlockingQueue<>();
+
+	private final AtomicInteger producerCounter = new AtomicInteger(0);
+	private final AtomicInteger consumerCounter = new AtomicInteger(0);
 
 	@Override
 	public int countMessages() {
-		return queue.size();
+		return dataQueue.size();
 	}
 
+	@Override
 	public void runProducer() {
-		LOGGER.info("Run producer");
-		isProducerRunning = true;
-		new Thread(
-				() -> {
-					try {
-						while (isProducerRunning) {
-							Optional<Message<T>> message = producer.produce();
-							if (message.isPresent()) {
-								queue.put(message.get());
+		try {
+			LOGGER.info("Run producer");
+			Thread producerThread = new Thread(
+					new ThreadGroup("jmx-kickoff"),
+					() -> {
+						try {
+							while (true) {
+								dataQueue.put(producer.produce());
 							}
+						} catch (InterruptedException ex) {
+							Thread.currentThread().interrupt();
+							LOGGER.error("Putting message interrupted", ex);
 						}
-					} catch (InterruptedException ex) {
-						Thread.currentThread().interrupt();
-						LOGGER.error("Producer thread interrupted");
-					}
-				}
-		).start();
+					},
+					"jmx-kickoff-producer".concat(String.valueOf(producerCounter.incrementAndGet()))
+			);
+			producerQueue.put(producerThread);
+			producerThread.start();
+
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			LOGGER.error("Putting producer interrupted", ex);
+		} catch (Exception ex) {
+			LOGGER.error("Error while producing message", ex);
+		}
 	}
 
+	//TODO: verify why stopping a producer the application stop
+
+	@Override
 	public void stopProducer() {
 		LOGGER.info("Stop producer");
-		isProducerRunning = false;
+		try {
+			Thread producer = producerQueue.poll();
+			if (producer != null) {
+				LOGGER.info("Producer thread {}", producer.getName());
+				producer.interrupt();
+			}
+		} catch (Exception ex) {
+			LOGGER.error("Polling producer interrupted", ex);
+		}
 	}
 
+	@Override
 	public void runConsumer() {
-		LOGGER.info("Run consumer");
-		isConsumerRunning = true;
-		new Thread(
-				() -> {
-					try {
-						while (isConsumerRunning) {
-							Message<T> message = queue.poll(1L, TimeUnit.SECONDS);
-							consumer.consume(message);
+		try {
+			LOGGER.info("Run consumer");
+			Thread consumerThread = new Thread(
+					new ThreadGroup("jmx-kickoff"),
+					() -> {
+						try {
+							while (true) {
+								Message<T> message = dataQueue.poll(1L, TimeUnit.SECONDS);
+								consumer.consume(message);
+							}
+						} catch (InterruptedException ex) {
+							Thread.currentThread().interrupt();
+							LOGGER.error("Polling message interrupted", ex);
 						}
-					} catch (InterruptedException ex) {
-						Thread.currentThread().interrupt();
-						LOGGER.info("Consumer thread interrupted");
-					}
-				}
-		).start();
+					},
+					"jmx-kickoff-consumer".concat(String.valueOf(consumerCounter.incrementAndGet()))
+			);
+			consumerQueue.put(consumerThread);
+			consumerThread.start();
+		} catch (Exception ex) {
+			Thread.currentThread().interrupt();
+			LOGGER.error("Putting consumer interrupted", ex);
+		}
 	}
 
+	@Override
 	public void stopConsumer() {
 		LOGGER.info("Stop consumer");
-		isConsumerRunning = false;
+		try {
+			Thread consumer = consumerQueue.poll();
+			if (consumer != null) {
+				consumer.interrupt();
+			}
+		} catch (Exception ex) {
+			LOGGER.error("Polling consumer interrupted", ex);
+		}
 	}
 
 }

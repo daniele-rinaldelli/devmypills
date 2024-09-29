@@ -28,12 +28,13 @@ public interface MessageConsumer<T> {
 			long millis = Duration.of(interval, timeUnit).toMillis();
 			Thread.sleep(millis);
 			getConsumer().accept(message);
-		} catch (InterruptedException ex) {
-			LOGGER.error("Error producing message", ex);
-			Thread.currentThread().interrupt();
-		}
-		LOGGER.info("Produced message: {}", message);
+			LOGGER.info("Consumed message: {}", message);
 
+		} catch (InterruptedException ex) {
+			LOGGER.error("Error consuming message", ex);
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Consumer interrupted");
+		}
 	}
 
 	default int getDefaultCounter() {

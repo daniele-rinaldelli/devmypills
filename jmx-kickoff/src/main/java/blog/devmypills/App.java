@@ -44,10 +44,10 @@ public class App {
 		LOGGER.info("N. of messages available: {}", queueCoordinator.countMessages());
 	}
 
-	private void instrumentManagement(QueueCoordinator queueCoordinator) {
+	private <T> void instrumentManagement(QueueCoordinator<T> queueCoordinator) {
 		try {
 			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-			ObjectName managedObjectName = new ObjectName("edu.danir.kickoff.jmx.mbeans:type=QueueCoordinator");
+			ObjectName managedObjectName = new ObjectName("blog.devmypills.kickoff.jmx.mbeans:type=QueueCoordinator");
 			mBeanServer.registerMBean(queueCoordinator, managedObjectName);
 			LOGGER.info("Instrumentation completed");
 		} catch (Exception ex) {
