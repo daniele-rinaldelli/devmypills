@@ -16,27 +16,28 @@ public interface MessageProducer<T> {
 
 	AtomicInteger counter = new AtomicInteger(0);
 
-	Message<T> produce();
+	Optional<Message<T>> produce();
 
 	Supplier<T> getGenerator();
 
-	default Message<T> defaultProduce() {
+	default Optional<Message<T>> defaultProduce() {
 		return produceAndWait(100, ChronoUnit.MILLIS);
 	}
 
-	default Message<T> produceAndWait(int interval, ChronoUnit timeUnit) {
+	default Optional<Message<T>> produceAndWait(int interval, ChronoUnit timeUnit) {
+		Optional<Message<T>> message = Optional.empty();
 		try {
 			long millis = Duration.of(interval, timeUnit).toMillis();
 			Thread.sleep(millis);
-			Message<T> message = new Message<>(getGenerator().get());
+			Message<T> messageData = new Message<>(getGenerator().get());
+			message = Optional.of(messageData);
 			counter.getAndIncrement();
-			LOGGER.info("Produced message: {}", message);
-			return message;
 		} catch (InterruptedException ex) {
 			LOGGER.error("Error producing message", ex);
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("Producer interrupted");
 		}
+		LOGGER.info("Produced message: {}", message);
+		return message;
 	}
 
 	default int getDefaultCounter() {

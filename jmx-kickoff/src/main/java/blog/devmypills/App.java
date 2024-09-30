@@ -16,32 +16,28 @@ public class App {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		LOGGER.info("JMX Kickoff");
 		App app = new App();
 		app.execute();
 	}
 
-	private void execute() throws InterruptedException {
+	private void execute() {
+		try {
+			MessageProducer<String> producer = new StringMessageProducer(20);
+			MessageConsumer<String> consumer = new StringMessageConsumer();
 
-		MessageProducer<String> producer = new StringMessageProducer(20);
-		MessageConsumer<String> consumer = new StringMessageConsumer();
+			QueueCoordinator<String> queueCoordinator = new QueueCoordinator<>(producer, consumer);
 
-		QueueCoordinator<String> queueCoordinator = new QueueCoordinator<>(producer, consumer);
+			queueCoordinator.runProducer();
+			queueCoordinator.runConsumer();
 
-		queueCoordinator.runProducer();
+			instrumentManagement(queueCoordinator);
 
-		Thread.sleep(5000);
-//		queueCoordinator.stopProducer();
-
-		queueCoordinator.runConsumer();
-
-		Thread.sleep(5000);
-		queueCoordinator.stopConsumer();
-
-		instrumentManagement(queueCoordinator);
-
-		LOGGER.info("N. of messages available: {}", queueCoordinator.countMessages());
+			LOGGER.info("N. of messages available: {}", queueCoordinator.countMessages());
+		} catch (Exception ex) {
+			LOGGER.error("Error", ex);
+		}
 	}
 
 	private <T> void instrumentManagement(QueueCoordinator<T> queueCoordinator) {

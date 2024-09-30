@@ -4,11 +4,15 @@ public interface CoordinatorMXBean {
 
 	int countMessages();
 
+	int countRunningProducers();
+
 	void runProducer();
 
-	void runConsumer();
-
 	void stopProducer();
+
+	int countRunningConsumers();
+
+	void runConsumer();
 
 	void stopConsumer();
 }

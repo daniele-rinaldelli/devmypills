@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,11 +19,15 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueueCoordinator.class);
 
+	public static final String THREAD_GROUP_NAME = "jmx-kickoff";
+	public static final String CONSUMER_THREAD_PREFIX_NAME = "jmx-kickoff-consumer-";
+	public static final String PRODUCER_THREAD_PREFIX_NAME = "jmx-kickoff-producer-";
+
 	private final MessageProducer<T> producer;
 	private final MessageConsumer<T> consumer;
 
-	private final BlockingQueue<Thread> producerQueue = new LinkedBlockingQueue<>();
-	private final BlockingQueue<Thread> consumerQueue = new LinkedBlockingQueue<>();
+	private final LinkedBlockingDeque<Thread> producerQueue = new LinkedBlockingDeque<>();
+	private final LinkedBlockingDeque<Thread> consumerQueue = new LinkedBlockingDeque<>();
 	private final BlockingQueue<Message<T>> dataQueue = new LinkedBlockingQueue<>();
 
 	private final AtomicInteger producerCounter = new AtomicInteger(0);
@@ -33,45 +39,53 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 	}
 
 	@Override
+	public int countRunningProducers() {
+		return producerQueue.size();
+	}
+
+	@Override
+	public int countRunningConsumers() {
+		return consumerQueue.size();
+	}
+
+	@Override
 	public void runProducer() {
 		try {
-			LOGGER.info("Run producer");
+			LOGGER.info("Running a new producer. Spinning from thread {}", Thread.currentThread());
 			Thread producerThread = new Thread(
-					new ThreadGroup("jmx-kickoff"),
+					new ThreadGroup(THREAD_GROUP_NAME),
 					() -> {
 						try {
 							while (true) {
-								dataQueue.put(producer.produce());
+								Optional<Message<T>> optionalMessage = producer.produce();
+								if (optionalMessage.isPresent()) {
+									dataQueue.put(optionalMessage.get());
+								}
 							}
-						} catch (InterruptedException ex) {
+						} catch (Exception ex) {
 							Thread.currentThread().interrupt();
-							LOGGER.error("Putting message interrupted", ex);
+							LOGGER.error("Producer thread {}, encounter and error", Thread.currentThread().getName());
+							LOGGER.error("Producer error details", ex);
 						}
 					},
-					"jmx-kickoff-producer".concat(String.valueOf(producerCounter.incrementAndGet()))
+					PRODUCER_THREAD_PREFIX_NAME.concat(String.valueOf(producerCounter.incrementAndGet()))
 			);
 			producerQueue.put(producerThread);
 			producerThread.start();
 
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-			LOGGER.error("Putting producer interrupted", ex);
 		} catch (Exception ex) {
-			LOGGER.error("Error while producing message", ex);
+			Thread.currentThread().interrupt();
+			LOGGER.error("Error trying to add a producer on producer thread queue", ex);
 		}
 	}
-
-	//TODO: verify why stopping a producer the application stop
 
 	@Override
 	public void stopProducer() {
 		LOGGER.info("Stop producer");
 		try {
-			Thread producer = producerQueue.poll();
-			if (producer != null) {
-				LOGGER.info("Producer thread {}", producer.getName());
-				producer.interrupt();
-			}
+			Optional.of(producerQueue)
+					.map(LinkedBlockingDeque::pollLast)
+					.ifPresent(Thread::interrupt);
 		} catch (Exception ex) {
 			LOGGER.error("Polling producer interrupted", ex);
 		}
@@ -82,25 +96,26 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 		try {
 			LOGGER.info("Run consumer");
 			Thread consumerThread = new Thread(
-					new ThreadGroup("jmx-kickoff"),
+					new ThreadGroup(THREAD_GROUP_NAME),
 					() -> {
 						try {
 							while (true) {
 								Message<T> message = dataQueue.poll(1L, TimeUnit.SECONDS);
 								consumer.consume(message);
 							}
-						} catch (InterruptedException ex) {
+						} catch (Exception ex) {
 							Thread.currentThread().interrupt();
-							LOGGER.error("Polling message interrupted", ex);
+							LOGGER.error("Consumer thread {}, encounter and error", Thread.currentThread().getName());
+							LOGGER.error("Consumer error details", ex);
 						}
 					},
-					"jmx-kickoff-consumer".concat(String.valueOf(consumerCounter.incrementAndGet()))
+					CONSUMER_THREAD_PREFIX_NAME.concat(String.valueOf(consumerCounter.incrementAndGet()))
 			);
 			consumerQueue.put(consumerThread);
 			consumerThread.start();
 		} catch (Exception ex) {
 			Thread.currentThread().interrupt();
-			LOGGER.error("Putting consumer interrupted", ex);
+			LOGGER.error("Error trying to add a consumer on consumer thread queue", ex);
 		}
 	}
 
@@ -108,10 +123,9 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 	public void stopConsumer() {
 		LOGGER.info("Stop consumer");
 		try {
-			Thread consumer = consumerQueue.poll();
-			if (consumer != null) {
-				consumer.interrupt();
-			}
+			Optional.of(consumerQueue)
+					.map(LinkedBlockingDeque::pollLast)
+					.ifPresent(Thread::interrupt);
 		} catch (Exception ex) {
 			LOGGER.error("Polling consumer interrupted", ex);
 		}

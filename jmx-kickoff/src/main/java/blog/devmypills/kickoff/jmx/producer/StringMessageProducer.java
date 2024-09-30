@@ -13,7 +13,7 @@ public class StringMessageProducer implements MessageProducer<String> {
 	private final int messageMaxLength;
 
 	@Override
-	public Message<String> produce() {
+	public Optional<Message<String>> produce() {
 		return defaultProduce();
 	}
 

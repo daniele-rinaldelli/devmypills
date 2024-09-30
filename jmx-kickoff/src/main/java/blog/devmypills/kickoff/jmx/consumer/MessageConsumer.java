@@ -20,7 +20,7 @@ public interface MessageConsumer<T> {
 	Consumer<Message<T>> getConsumer();
 
 	default void defaultConsume(Message<T> message) {
-		defaultConsumeAtInterval(message, 100, ChronoUnit.MILLIS);
+		defaultConsumeAtInterval(message, 150, ChronoUnit.MILLIS);
 	}
 
 	default void defaultConsumeAtInterval(Message<T> message, int interval, ChronoUnit timeUnit) {
@@ -28,6 +28,7 @@ public interface MessageConsumer<T> {
 			long millis = Duration.of(interval, timeUnit).toMillis();
 			Thread.sleep(millis);
 			getConsumer().accept(message);
+			counter.incrementAndGet();
 			LOGGER.info("Consumed message: {}", message);
 
 		} catch (InterruptedException ex) {
