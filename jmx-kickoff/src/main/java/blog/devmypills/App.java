@@ -2,6 +2,7 @@ package blog.devmypills;
 
 import blog.devmypills.kickoff.jmx.consumer.MessageConsumer;
 import blog.devmypills.kickoff.jmx.consumer.StringMessageConsumer;
+import blog.devmypills.kickoff.jmx.coordinator.CoordinatorMXBean;
 import blog.devmypills.kickoff.jmx.coordinator.QueueCoordinator;
 import blog.devmypills.kickoff.jmx.producer.MessageProducer;
 import blog.devmypills.kickoff.jmx.producer.StringMessageProducer;
@@ -18,8 +19,7 @@ public class App {
 
 	public static void main(String[] args) {
 		LOGGER.info("JMX Kickoff");
-		App app = new App();
-		app.execute();
+		new App().execute();
 	}
 
 	private void execute() {
@@ -32,19 +32,17 @@ public class App {
 			queueCoordinator.runProducer();
 			queueCoordinator.runConsumer();
 
-			instrumentManagement(queueCoordinator);
-
-			LOGGER.info("N. of messages available: {}", queueCoordinator.countMessages());
+			instrumentCoordinator(queueCoordinator);
 		} catch (Exception ex) {
 			LOGGER.error("Error", ex);
 		}
 	}
 
-	private <T> void instrumentManagement(QueueCoordinator<T> queueCoordinator) {
+	private void instrumentCoordinator(CoordinatorMXBean coordinator) {
 		try {
 			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			ObjectName managedObjectName = new ObjectName("blog.devmypills.kickoff.jmx.mbeans:type=QueueCoordinator");
-			mBeanServer.registerMBean(queueCoordinator, managedObjectName);
+			mBeanServer.registerMBean(coordinator, managedObjectName);
 			LOGGER.info("Instrumentation completed");
 		} catch (Exception ex) {
 			LOGGER.error("Error while instrumenting mbeans", ex);
