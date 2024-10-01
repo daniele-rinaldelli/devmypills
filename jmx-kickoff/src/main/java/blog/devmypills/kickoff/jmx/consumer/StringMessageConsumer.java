@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class StringMessageConsumer implements MessageConsumer<String> {
+public class StringMessageConsumer implements MessageConsumer<Message<String>> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StringMessageConsumer.class);
 

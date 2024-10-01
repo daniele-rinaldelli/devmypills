@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
-public class QueueCoordinator<T> implements CoordinatorMXBean {
+public class QueueCoordinator<T extends Message<?>> implements CoordinatorMXBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueueCoordinator.class);
 
@@ -28,7 +28,7 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 
 	private final LinkedBlockingDeque<Thread> producerQueue = new LinkedBlockingDeque<>();
 	private final LinkedBlockingDeque<Thread> consumerQueue = new LinkedBlockingDeque<>();
-	private final BlockingQueue<Message<T>> dataQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<T> dataQueue = new LinkedBlockingQueue<>();
 
 	private final AtomicInteger producerCounter = new AtomicInteger(0);
 	private final AtomicInteger consumerCounter = new AtomicInteger(0);
@@ -57,10 +57,7 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 					() -> {
 						try {
 							while (true) {
-								Optional<Message<T>> optionalMessage = producer.produce();
-								if (optionalMessage.isPresent()) {
-									dataQueue.put(optionalMessage.get());
-								}
+								dataQueue.put(producer.produce());
 							}
 						} catch (Exception ex) {
 							Thread.currentThread().interrupt();
@@ -100,7 +97,7 @@ public class QueueCoordinator<T> implements CoordinatorMXBean {
 					() -> {
 						try {
 							while (true) {
-								Message<T> message = dataQueue.poll(1L, TimeUnit.SECONDS);
+								T message = dataQueue.poll(1L, TimeUnit.SECONDS);
 								consumer.consume(message);
 							}
 						} catch (Exception ex) {
