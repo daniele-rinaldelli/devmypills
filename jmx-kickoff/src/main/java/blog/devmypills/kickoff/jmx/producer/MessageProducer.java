@@ -18,7 +18,7 @@ public interface MessageProducer<T extends Message<?>>  {
 
 	T produce();
 
-	Supplier<?> getGenerator();
+	Supplier<T> getGenerator();
 
 	default T defaultProduce() {
 		return produceAndWait(100, ChronoUnit.MILLIS);
@@ -28,8 +28,7 @@ public interface MessageProducer<T extends Message<?>>  {
 		try {
 			long millis = Duration.of(interval, timeUnit).toMillis();
 			Thread.sleep(millis);
-			T message = (T) new Message<>(getGenerator().get());
-			LOGGER.info("Produced message: {}", message);
+			T message = getGenerator().get();
 			counter.getAndIncrement();
 			return message;
 		} catch (InterruptedException ex) {
