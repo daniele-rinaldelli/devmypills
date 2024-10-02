@@ -1,5 +1,6 @@
 package blog.devmypills.kickoff.jmx.coordinator;
 
+import blog.devmypills.kickoff.jmx.annotation.JmxObject;
 import blog.devmypills.kickoff.jmx.consumer.MessageConsumer;
 import blog.devmypills.kickoff.jmx.message.Message;
 import blog.devmypills.kickoff.jmx.producer.MessageProducer;
@@ -15,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
-public class QueueCoordinator<T extends Message<?>> implements CoordinatorMXBean {
+@JmxObject(name = "blog.devmypills.kickoff.jmx.mbeans:type=QueueCoordinator")
+public class QueueCoordinator<T extends Message<?>> implements QueueCoordinatorMBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueueCoordinator.class);
 

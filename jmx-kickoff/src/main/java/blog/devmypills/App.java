@@ -1,9 +1,10 @@
 package blog.devmypills;
 
+import blog.devmypills.kickoff.jmx.annotation.JmxObject;
 import blog.devmypills.kickoff.jmx.consumer.MessageConsumer;
 import blog.devmypills.kickoff.jmx.consumer.StringMessageConsumer;
-import blog.devmypills.kickoff.jmx.coordinator.CoordinatorMXBean;
 import blog.devmypills.kickoff.jmx.coordinator.QueueCoordinator;
+import blog.devmypills.kickoff.jmx.coordinator.QueueCoordinatorMBean;
 import blog.devmypills.kickoff.jmx.message.Message;
 import blog.devmypills.kickoff.jmx.producer.MessageProducer;
 import blog.devmypills.kickoff.jmx.producer.StringMessageProducer;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class App {
 
@@ -34,17 +37,28 @@ public class App {
 			queueCoordinator.runConsumer();
 
 			instrumentCoordinator(queueCoordinator);
+
+			LOGGER.info("Main thread terminated");
+
 		} catch (Exception ex) {
 			LOGGER.error("Error", ex);
 		}
 	}
 
-	private void instrumentCoordinator(CoordinatorMXBean coordinator) {
+	private void instrumentCoordinator(QueueCoordinatorMBean coordinator) {
 		try {
-			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-			ObjectName managedObjectName = new ObjectName("blog.devmypills.kickoff.jmx.mbeans:type=QueueCoordinator");
-			mBeanServer.registerMBean(coordinator, managedObjectName);
-			LOGGER.info("Instrumentation completed");
+
+			Optional<JmxObject> jmxMetadata = Arrays.stream(coordinator.getClass().getAnnotations())
+					.filter(annotation -> annotation.annotationType().equals(JmxObject.class))
+					.map(JmxObject.class::cast)
+					.findFirst();
+			if (jmxMetadata.isPresent()) {
+				MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+				ObjectName managedObject = new ObjectName(jmxMetadata.get().name());
+				mBeanServer.registerMBean(coordinator, managedObject);
+				LOGGER.info("Instrumentation completed");
+			}
+
 		} catch (Exception ex) {
 			LOGGER.error("Error while instrumenting mbeans", ex);
 		}

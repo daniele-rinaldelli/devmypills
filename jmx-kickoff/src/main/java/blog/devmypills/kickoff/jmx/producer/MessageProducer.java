@@ -1,5 +1,6 @@
 package blog.devmypills.kickoff.jmx.producer;
 
+import blog.devmypills.kickoff.jmx.exception.ProducerException;
 import blog.devmypills.kickoff.jmx.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +29,13 @@ public interface MessageProducer<T extends Message<?>>  {
 			long millis = Duration.of(interval, timeUnit).toMillis();
 			Thread.sleep(millis);
 			T message = (T) new Message<>(getGenerator().get());
+			LOGGER.info("Produced message: {}", message);
 			counter.getAndIncrement();
 			return message;
 		} catch (InterruptedException ex) {
 			LOGGER.error("Error producing message", ex);
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("Error producing message");
+			throw new ProducerException();
 		}
 	}
 
