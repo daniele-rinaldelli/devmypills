@@ -100,7 +100,9 @@ public class QueueCoordinator<T extends Message<?>> implements QueueCoordinatorM
 						try {
 							while (true) {
 								T message = dataQueue.poll(1L, TimeUnit.SECONDS);
-								consumer.consume(message);
+								if(message != null) {
+									consumer.consume(message);
+								}
 							}
 						} catch (Exception ex) {
 							Thread.currentThread().interrupt();
