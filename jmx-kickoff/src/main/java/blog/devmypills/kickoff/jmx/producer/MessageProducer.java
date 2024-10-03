@@ -1,6 +1,6 @@
 package blog.devmypills.kickoff.jmx.producer;
 
-import blog.devmypills.kickoff.jmx.exception.ProducerException;
+import blog.devmypills.kickoff.jmx.exception.ProducerInterruptedException;
 import blog.devmypills.kickoff.jmx.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public interface MessageProducer<T extends Message<?>>  {
 		} catch (InterruptedException ex) {
 			LOGGER.error("Error producing message", ex);
 			Thread.currentThread().interrupt();
-			throw new ProducerException();
+			throw new ProducerInterruptedException();
 		}
 	}
 

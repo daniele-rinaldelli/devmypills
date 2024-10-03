@@ -1,6 +1,6 @@
 package blog.devmypills.kickoff.jmx.consumer;
 
-import blog.devmypills.kickoff.jmx.exception.ConsumerException;
+import blog.devmypills.kickoff.jmx.exception.ConsumerInterruptedException;
 import blog.devmypills.kickoff.jmx.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public interface MessageConsumer<T extends Message<?>> {
 		} catch (InterruptedException ex) {
 			LOGGER.error("Consuming message interrupted", ex);
 			Thread.currentThread().interrupt();
-			throw new ConsumerException();
+			throw new ConsumerInterruptedException();
 		}
 	}
 
