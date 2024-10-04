@@ -11,21 +11,21 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class StringMessageProducer implements MessageProducer<Message<String>> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(StringMessageProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringMessageProducer.class);
 
-	private final int messageMaxLength;
+    private final int messageMaxLength;
 
-	@Override
-	public Message<String> produce() {
-		return defaultProduce();
-	}
+    @Override
+    public Message<String> produce() {
+        return defaultProduce();
+    }
 
-	@Override
-	public Supplier<Message<String>> getGenerator() {
-		return () -> {
-			Message<String> message = new Message<>(RandomStringUtils.secure().nextAlphabetic(messageMaxLength));
-			LOGGER.info("Produced message: {}", message);
-			return message;
-		};
-	}
+    @Override
+    public Supplier<Message<String>> getGenerator() {
+        return () -> {
+            Message<String> message = new Message<>(RandomStringUtils.secure().nextAlphabetic(messageMaxLength));
+            LOGGER.info("Produced message: {}", message);
+            return message;
+        };
+    }
 }
