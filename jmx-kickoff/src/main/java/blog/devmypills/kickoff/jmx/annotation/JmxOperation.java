@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 public @interface JmxOperation {
 
 	@DescriptorKey("Description")
-	String name();
+	String description();
 }
