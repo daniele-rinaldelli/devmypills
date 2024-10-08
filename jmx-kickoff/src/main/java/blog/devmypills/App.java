@@ -14,8 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.Objects;
 
 public class App {
 
@@ -47,21 +46,15 @@ public class App {
 
 	private void instrumentCoordinator(QueueCoordinatorMBean coordinator) {
 		try {
-
-			Optional<JmxObject> jmxMetadata = Arrays.stream(coordinator.getClass().getAnnotations())
-					.filter(annotation -> annotation.annotationType().equals(JmxObject.class))
-					.map(JmxObject.class::cast)
-					.findFirst();
-			if (jmxMetadata.isPresent()) {
+			JmxObject jmxMetadata = coordinator.getClass().getAnnotation(JmxObject.class);
+			if (Objects.nonNull(jmxMetadata)) {
 				MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				ObjectName managedObject = new ObjectName(jmxMetadata.get().name());
+				ObjectName managedObject = new ObjectName(jmxMetadata.name());
 				mBeanServer.registerMBean(coordinator, managedObject);
 				LOGGER.info("Instrumentation completed");
 			}
-
 		} catch (Exception ex) {
 			LOGGER.error("Error while instrumenting mbeans", ex);
 		}
 	}
-
 }
