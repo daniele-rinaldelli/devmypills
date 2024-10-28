@@ -14,8 +14,8 @@ public class JsonPathfinder implements Pathfinder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonPathfinder.class);
 
 	private static final String TARGET_PLACEHOLDER = "<target>";
-	public static final String TARGET_GROUP_NAME = "targetGroupName";
-	public static final String INTERNAL_KEY_REPLACEMENT_FACE = "<~._.~>";
+	private static final String TARGET_GROUP_NAME = "targetGroupName";
+	private static final String INTERNAL_TARGET_REPLACEMENT_FACE = "<~._.~>";
 
 	private String regexForUselessContainerObjects = "(\\{[^{}]*})(?=.*\"" + TARGET_PLACEHOLDER + "\":)";
 	private String regexForContainersObjects = "(\"(?<" + TARGET_GROUP_NAME + ">[^\"]+)\")(?=:\\{.*\"" + TARGET_PLACEHOLDER + "\")";
@@ -25,6 +25,7 @@ public class JsonPathfinder implements Pathfinder {
 	private final String initialTarget;
 	private final String initialContext;
 
+	//TODO: optimize regex compilation
 	private JsonPathfinder(String target, String context) {
 		this.initialTarget = target;
 		this.initialContext = context;
@@ -88,9 +89,10 @@ public class JsonPathfinder implements Pathfinder {
 
 	private void executeFindInMultiTargetContext(String target, String context, List<List<String>> globalResult) {
 
-		String targetReplacement = INTERNAL_KEY_REPLACEMENT_FACE;
+		String targetReplacement = INTERNAL_TARGET_REPLACEMENT_FACE;
 		String replacedContext = context;
 
+		//TODO: remove double count call, get count number directly
 		while (isMultiTargetContext(target, replacedContext)) {
 			int matchNumber = countMatchNumber(target, replacedContext);
 			replacedContext = replaceTargets(target, replacedContext, targetReplacement, matchNumber - 1);
@@ -127,7 +129,7 @@ public class JsonPathfinder implements Pathfinder {
 		}
 
 		if (!containers.isEmpty()) {
-			containers.add(target.equals(INTERNAL_KEY_REPLACEMENT_FACE) ? this.initialTarget : target);
+			containers.add(target.equals(INTERNAL_TARGET_REPLACEMENT_FACE) ? this.initialTarget : target);
 		}
 
 		LOGGER.info("Containers: {}", containers);

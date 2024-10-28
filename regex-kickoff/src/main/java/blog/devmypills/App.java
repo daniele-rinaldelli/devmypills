@@ -1,7 +1,6 @@
 package blog.devmypills;
 
 import blog.devmypills.kickoff.regex.finder.JsonPathfinder;
-import blog.devmypills.kickoff.regex.formatter.UnixPathFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +18,9 @@ public class App {
 	}
 
 	private void execute(String target, String context) {
-
 		String formattedPath = JsonPathfinder.readyFor(target, context)
 				.findPath()
-				.getFormattedPath(new UnixPathFormatter());
+				.getFormattedPath();
 
 		LOGGER.info("Path: {}", formattedPath);
 	}
