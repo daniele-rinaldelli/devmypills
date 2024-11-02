@@ -14,21 +14,21 @@ class JsonPathfinderTest {
 	@Test
 	void findPath() {
 		String context = """
-				{"person":{"full name":"Dana Waters","address":{"street":"47556 Gina Dale","city":"Chaeryŏng-ŭp"},"contact":{"home":{"first":"06 12345678","second":"06 963852"},"mobile":"333 6584147","email":"fake@mail.com"}}}
+				{"person":{"full name":"Dana Waters","address":{"street":"47556 Gina Dale","city":"Chaeryŏng-ŭp"},"contact":{"mobile":{"first":"06 12345678","second":"06 963852"},"home":"333 6584147","email":"fake@mail.com"}}}
 				""";
 		String target = "first";
 
 		var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
 		String formattedPath = jsonPathFinder.getFormattedPath();
 
-		assertEquals("/person/contact/home/first", formattedPath);
+		assertEquals("/person/contact/mobile/first", formattedPath);
 	}
 
 	@Test
 	@Disabled("Not yet implemented")
 	void findPathWithinArray() {
 		String context = """
-				{"person":{"full name":"Marco Kassulke","address":{"street":"6976 Ward Ranch","city":"Laayoune"},"cars":[{"brand":"lamborghini","model":"miura","year":"2009"},{"brand":"ferrari","model":"california","year":"2014"},{"brand":"lamborghini","model":"miura","year":"2009"}]}}
+				{"person":{"full name":"Marco Kassulke","address":{"street":"6976 Ward Ranch","city":"Laayoune"},"cars":[{"brand":"lamborghini","model":"miura","year":"2009"},{"brand":"ferrari","model":"california","year":"2014"},{"brand":"maserati","model":"ghibli","year":"2015"}]}}
 				""";
 
 		String target = "model";
@@ -40,7 +40,7 @@ class JsonPathfinderTest {
 	@Test
 	void findInMultiTargetContext() {
 		String context = """
-				{"person":{"full name":"Marco Kassulke","address":{"street":"6976 Ward Ranch","city":"Laayoune"},"firstCar":{"brand":"lamborghini","model":"miura","year":"2009"},"secondCar":{"brand":"ferrari","model":"california","year":"2014"},"thirdCar":{"brand":"lamborghini","model":"miura","year":"2009"}}}
+				{"person":{"full name":"Marco Kassulke","address":{"street":"6976 Ward Ranch","city":"Laayoune"},"firstCar":{"brand":"lamborghini","model":"miura","year":"2009"},"secondCar":{"brand":"ferrari","model":"california","year":"2014"},"thirdCar":{"brand":"maserati","model":"ghibli","year":"2015"}}}
 				""";
 		String target = "model";
 
