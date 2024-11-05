@@ -31,14 +31,21 @@ public class JsonPathfinder implements Pathfinder {
 
 	private List<List<String>> resultPath;
 
-	private final Map<String, Pattern> partters = new HashMap<>();
+	private final Map<String, Pattern> patterns = new HashMap<>();
 
 	private final String initialTarget;
 	private final String initialContext;
 
 	private JsonPathfinder(String target, String context) {
-		this.initialTarget = target;
-		this.initialContext = context;
+		initialTarget = target;
+		initialContext = context;
+
+		patterns.put(KEY_USELESS_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
+		patterns.put(KEY_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
+		patterns.put(KEY_USELESS_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
+		patterns.put(KEY_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
+		patterns.put(KEY_TARGET, Pattern.compile(initialTarget));
+		patterns.put(KEY_INTERNAL_TARGET, Pattern.compile(INTERNAL_TARGET_PLACEHOLDER));
 	}
 
 	public static JsonPathfinder readyFor(String target, String context) {
@@ -47,14 +54,6 @@ public class JsonPathfinder implements Pathfinder {
 
 	@Override
 	public Pathfinder findPath() {
-
-		partters.put(KEY_USELESS_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
-		partters.put(KEY_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
-		partters.put(KEY_USELESS_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
-		partters.put(KEY_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
-		partters.put(KEY_TARGET, Pattern.compile(initialTarget));
-		partters.put(KEY_INTERNAL_TARGET, Pattern.compile(INTERNAL_TARGET_PLACEHOLDER));
-
 		resultPath = executeFindMultiMatch(initialTarget, initialContext);
 
 		LOGGER.info("Result: {}", resultPath);
@@ -148,8 +147,8 @@ public class JsonPathfinder implements Pathfinder {
 
 	private Pattern getPattern(String target, String keyTarget, String keyInternalTarget) {
 		return switch (target) {
-			case String t when t.equals(initialTarget) -> partters.get(keyTarget);
-			case String t when t.equals(INTERNAL_TARGET_PLACEHOLDER) -> partters.get(keyInternalTarget);
+			case String t when t.equals(initialTarget) -> patterns.get(keyTarget);
+			case String t when t.equals(INTERNAL_TARGET_PLACEHOLDER) -> patterns.get(keyInternalTarget);
 			case null, default -> throw new RuntimeException("No suitable patter available");
 		};
 	}
