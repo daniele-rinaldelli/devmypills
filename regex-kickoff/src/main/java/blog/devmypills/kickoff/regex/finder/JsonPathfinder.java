@@ -54,7 +54,8 @@ public class JsonPathfinder implements Pathfinder {
 
 	@Override
 	public Pathfinder findPath() {
-		resultPath = executeFindMultiMatch(initialTarget, initialContext);
+		String adjustedContext = adjustContext(initialContext);
+		resultPath = executeFindMultiMatch(initialTarget, adjustedContext);
 
 		LOGGER.info("Result: {}", resultPath);
 		return this;
@@ -94,6 +95,11 @@ public class JsonPathfinder implements Pathfinder {
 			counter++;
 		}
 		return counter;
+	}
+
+	//TODO: to evaluate
+	private String adjustContext(String context) {
+		return context.replace("[", "{").replace("]", "}").replace("\n", " ");
 	}
 
 	private List<List<String>> executeFindMultiMatch(String target, String context) {

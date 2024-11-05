@@ -1,11 +1,11 @@
 package blog.devmypills.kickoff.regex.finder;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsonPathfinderTest {
 
@@ -19,13 +19,13 @@ class JsonPathfinderTest {
 		String target = "first";
 
 		var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
-		String formattedPath = jsonPathFinder.getFormattedPath();
 
-		assertEquals("/person/contact/mobile/first", formattedPath);
+		String formattedPath = jsonPathFinder.getFormattedPath();
+		LOGGER.debug(formattedPath);
+		assertEquals("/person/contact/mobile/first -> 1", formattedPath);
 	}
 
 	@Test
-	@Disabled("Not yet implemented")
 	void findPathWithinArray() {
 		String context = """
 				{"person":{"full name":"Marco Kassulke","address":{"street":"6976 Ward Ranch","city":"Laayoune"},"cars":[{"brand":"lamborghini","model":"miura","year":"2009"},{"brand":"ferrari","model":"california","year":"2014"},{"brand":"maserati","model":"ghibli","year":"2015"}]}}
@@ -33,8 +33,10 @@ class JsonPathfinderTest {
 
 		String target = "model";
 		var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
+
 		String formattedPath = jsonPathFinder.getFormattedPath();
-		LOGGER.info("Formatted path: {}", formattedPath);
+		LOGGER.debug(formattedPath);
+		assertTrue(formattedPath.contains("/person/cars/model -> 3"));
 	}
 
 	@Test
@@ -44,13 +46,12 @@ class JsonPathfinderTest {
 				""";
 		String target = "model";
 
-		Pathfinder pathFinder = JsonPathfinder.readyFor(target, context).findPath();
+		Pathfinder jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
 
-		String expected = """
-				/person/thirdCar/model
-				/person/secondCar/model
-				/person/firstCar/model
-				""";
-		assertEquals(expected.trim(), pathFinder.getFormattedPath().trim());
+		String formattedPath = jsonPathFinder.getFormattedPath();
+		LOGGER.debug(formattedPath);
+		assertTrue(formattedPath.contains("/person/secondCar/model -> 1"));
+		assertTrue(formattedPath.contains("/person/thirdCar/model -> 1"));
+		assertTrue(formattedPath.contains("/person/firstCar/model -> 1"));
 	}
 }
