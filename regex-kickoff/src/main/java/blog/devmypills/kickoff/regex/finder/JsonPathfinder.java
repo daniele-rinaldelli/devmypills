@@ -71,32 +71,6 @@ public class JsonPathfinder implements Pathfinder {
 		return pathFormatter.showPath(resultPath);
 	}
 
-	private String replaceTargets(String target, String context, String replacement, int replacementNumber) {
-
-		Pattern pattern = getPattern(target, KEY_TARGET, KEY_INTERNAL_TARGET);
-		Matcher matcher = pattern.matcher(context);
-
-		while (matcher.find() && replacementNumber > 0) {
-			context = matcher.replaceFirst(replacement);
-			matcher = pattern.matcher(context);
-			replacementNumber--;
-		}
-
-		return context;
-	}
-
-	private int countMatchNumber(String target, String context) {
-
-		Pattern pattern = getPattern(target, KEY_TARGET, KEY_INTERNAL_TARGET);
-
-		Matcher matcher = pattern.matcher(context);
-		int counter = 0;
-		while (matcher.find()) {
-			counter++;
-		}
-		return counter;
-	}
-
 	//TODO: to evaluate
 	private String adjustContext(String context) {
 		return context.replace("[", "{").replace("]", "}").replace("\n", " ");
@@ -122,6 +96,32 @@ public class JsonPathfinder implements Pathfinder {
 		}
 
 		return result;
+	}
+
+	private String replaceTargets(String target, String context, String replacement, int replacementNumber) {
+
+		Pattern pattern = getPattern(target, KEY_TARGET, KEY_INTERNAL_TARGET);
+		Matcher matcher = pattern.matcher(context);
+
+		while (matcher.find() && replacementNumber > 0) {
+			context = matcher.replaceFirst(replacement);
+			matcher = pattern.matcher(context);
+			replacementNumber--;
+		}
+
+		return context;
+	}
+
+	private int countMatchNumber(String target, String context) {
+
+		Pattern pattern = getPattern(target, KEY_TARGET, KEY_INTERNAL_TARGET);
+
+		Matcher matcher = pattern.matcher(context);
+		int counter = 0;
+		while (matcher.find()) {
+			counter++;
+		}
+		return counter;
 	}
 
 	private List<String> executeFindSingleMatch(String target, String context) {

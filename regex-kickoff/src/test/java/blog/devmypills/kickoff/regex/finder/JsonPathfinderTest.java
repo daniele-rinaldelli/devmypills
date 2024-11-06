@@ -11,6 +11,8 @@ class JsonPathfinderTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonPathfinderTest.class);
 
+	//TODO: params test
+
 	@Test
 	void findPath() {
 		String context = """
@@ -46,7 +48,7 @@ class JsonPathfinderTest {
 				""";
 		String target = "model";
 
-		Pathfinder jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
+		var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
 
 		String formattedPath = jsonPathFinder.getFormattedPath();
 		LOGGER.debug(formattedPath);
