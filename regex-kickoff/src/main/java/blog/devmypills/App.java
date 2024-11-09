@@ -1,6 +1,5 @@
 package blog.devmypills;
 
-import blog.devmypills.kickoff.regex.finder.JsonPathfinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,18 +9,11 @@ public class App {
 
 	public static void main(String[] args) {
 		LOGGER.info("Regex Kickoff");
-		String context = """
-				{"person":{"full name":"Dana Waters","address":{"street":"47556 Gina Dale","city":"Chaeryŏng-ŭp"},"contact":{"home":{"first":"06 12345678","second":"06 963852"},"mobile":"333 6584147","email":"fake@mail.com"}}}
-				""";
-		String target = "first";
-		new App().execute(target, context);
+		//TODO: implement main REPL
+		new App().execute("target", "context");
 	}
 
 	private void execute(String target, String context) {
-		String formattedPath = JsonPathfinder.readyFor(target, context)
-				.findPath()
-				.getFormattedPath();
-
-		LOGGER.info("Path: {}", formattedPath);
+		LOGGER.info("Path for {} in {}", target, context);
 	}
 }

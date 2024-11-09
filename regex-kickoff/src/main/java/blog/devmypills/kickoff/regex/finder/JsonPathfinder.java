@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,13 +68,19 @@ public class JsonPathfinder implements Pathfinder {
 	}
 
 	@Override
-	public String getFormattedPath(PathFormatter pathFormatter) {
-		return pathFormatter.showPath(resultPath);
+	public Set<String> getPaths(PathFormatter pathFormatter) {
+		return pathFormatter.toSet(resultPath);
 	}
 
-	//TODO: to evaluate
+	public String getPathsAsString(PathFormatter pathFormatter) {
+		return pathFormatter.toString(resultPath);
+	}
+
 	private String adjustContext(String context) {
-		return context.replace("[", "{").replace("]", "}").replace("\n", " ");
+		return context.replace("[", "{")
+				.replace("]", "}")
+				.replaceAll("\\s", "")
+				.replaceAll("\\t", "");
 	}
 
 	private List<List<String>> executeFindMultiMatch(String target, String context) {

@@ -1,0 +1,29 @@
+{
+    "person":
+    {
+        "full name": "Marco Kassulke",
+        "address":
+        {
+            "street": "6976 Ward Ranch",
+            "city": "Laayoune"
+        },
+        "firstCar":
+        {
+            "brand": "lamborghini",
+            "model": "miura",
+            "year": "2009"
+        },
+        "secondCar":
+        {
+            "brand": "ferrari",
+            "model": "california",
+            "year": "2014"
+        },
+        "thirdCar":
+        {
+            "brand": "maserati",
+            "model": "ghibli",
+            "year": "2015"
+        }
+    }
+}

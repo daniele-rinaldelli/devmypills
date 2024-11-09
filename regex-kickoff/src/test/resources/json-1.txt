@@ -1,0 +1,21 @@
+{
+    "person":
+    {
+        "fullName": "Dana Waters",
+        "address":
+        {
+            "street": "47556 Gina Dale",
+            "city": "Chaeryŏng-ŭp"
+        },
+        "contact":
+        {
+            "mobile":
+            {
+                "first": "333 6584147",
+                "second": "333 1526169"
+            },
+            "home": "06 6584147",
+            "email": "fake@mail.com"
+        }
+    }
+}
