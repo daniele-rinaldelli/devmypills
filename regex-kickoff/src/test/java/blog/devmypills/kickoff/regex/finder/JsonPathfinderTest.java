@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsonPathfinderTest {
@@ -43,7 +44,9 @@ class JsonPathfinderTest {
 
 		var jsonPathFinder = JsonPathfinder.readyFor(target, jsonContext).findPath();
 
-		for (String currentExpectedResult : map.get(testFileName).expectedResults) {
+		Set<String> expectedResults = map.get(testFileName).expectedResults;
+		assertEquals(expectedResults.size(), jsonPathFinder.getPaths().size());
+		for (String currentExpectedResult : expectedResults) {
 			assertTrue(jsonPathFinder.getPaths().contains(currentExpectedResult));
 		}
 	}
@@ -54,13 +57,7 @@ class JsonPathfinderTest {
 			long testFilesNumber = Files.list(Path.of("src/test/resources")).count();
 			for (int index = 0; index < testFilesNumber; index++) {
 				String jsonFileName = "json-" + (index + 1) + ".txt";
-				try (
-						var bufferedReader = new BufferedReader(
-								new InputStreamReader(
-										JsonPathfinderTest.class.getClassLoader().getResourceAsStream(jsonFileName)
-								)
-						)
-				) {
+				try (var bufferedReader = getBufferedReaderFor(jsonFileName)) {
 					String jsonContent = bufferedReader.lines().collect(Collectors.joining("\n"));
 					arguments.add(Arguments.argumentSet("file: " + jsonFileName, jsonContent, jsonFileName));
 				}
@@ -72,4 +69,11 @@ class JsonPathfinderTest {
 		return arguments.stream();
 	}
 
+	private static BufferedReader getBufferedReaderFor(String fileName) {
+		return new BufferedReader(
+				new InputStreamReader(
+						JsonPathfinderTest.class.getClassLoader().getResourceAsStream(fileName)
+				)
+		);
+	}
 }
