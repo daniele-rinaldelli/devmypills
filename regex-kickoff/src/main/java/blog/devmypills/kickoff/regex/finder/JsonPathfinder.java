@@ -20,7 +20,7 @@ public class JsonPathfinder implements Pathfinder {
 	private static final String TARGET_GROUP_NAME = "targetGroupName";
 	private static final String INTERNAL_TARGET_PLACEHOLDER = "<~._.~>";
 
-	private static final String REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS = "(\\{[^{}]*})(?=.*\"" + TARGET_PLACEHOLDER + "\":)";
+	private static final String REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS = "(\\{(?![^{}]*?\"" + TARGET_PLACEHOLDER + "\":)[^{}]*?})";
 	private static final String REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS = "(\"(?<" + TARGET_GROUP_NAME + ">[^\"]+)\")(?=:\\{.*\"" + TARGET_PLACEHOLDER + "\")";
 
 	private static final String KEY_USELESS_CONTAINER_FOR_TARGET = "keyUselessContainerForTarget";
