@@ -134,16 +134,16 @@ public class JsonPathfinder implements Pathfinder {
 	private List<String> executeFindSingleMatch(String target, String context) {
 		List<String> containers = new ArrayList<>();
 
-		Pattern patternForUselessContainerObjects = getPattern(target, KEY_USELESS_CONTAINER_FOR_TARGET, KEY_USELESS_CONTAINER_FOR_INTERNAL_TARGET);
-		Matcher matcher = patternForUselessContainerObjects.matcher(context);
+		Pattern patternForUselessContainerObject = getPattern(target, KEY_USELESS_CONTAINER_FOR_TARGET, KEY_USELESS_CONTAINER_FOR_INTERNAL_TARGET);
+		Matcher matcher = patternForUselessContainerObject.matcher(context);
 
 		while (matcher.find()) {
 			context = matcher.replaceAll("");
-			matcher = patternForUselessContainerObjects.matcher(context);
+			matcher = patternForUselessContainerObject.matcher(context);
 		}
 
-		Pattern patternForContainersObjects = getPattern(target, KEY_CONTAINER_FOR_TARGET, KEY_CONTAINER_FOR_INTERNAL_TARGET);
-		Matcher matcherContainerObjects = patternForContainersObjects.matcher(context);
+		Pattern patternForContainersObject = getPattern(target, KEY_CONTAINER_FOR_TARGET, KEY_CONTAINER_FOR_INTERNAL_TARGET);
+		Matcher matcherContainerObjects = patternForContainersObject.matcher(context);
 
 		while (matcherContainerObjects.find()) {
 			String group = matcherContainerObjects.group(TARGET_GROUP_NAME);
@@ -151,7 +151,7 @@ public class JsonPathfinder implements Pathfinder {
 		}
 
 		if (!containers.isEmpty()) {
-			containers.add(target.equals(INTERNAL_TARGET_PLACEHOLDER) ? this.initialTarget : target);
+			containers.add(initialTarget);
 		}
 
 		LOGGER.info("Containers: {}", containers);
