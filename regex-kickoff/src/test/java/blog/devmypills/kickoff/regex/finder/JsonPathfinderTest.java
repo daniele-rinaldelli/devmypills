@@ -26,7 +26,7 @@ class JsonPathfinderTest {
 	public record SimplePair(String target, Set<String> expectedResults) {
 	}
 
-	private static final Map<String, SimplePair> map = Map.of(
+	private static final Map<String, SimplePair> EXPECTATIONS_MAP = Map.of(
 			"json-1.txt", new SimplePair("first", Set.of("/person/contact/mobile/first -> 1")),
 			"json-2.txt", new SimplePair("model", Set.of("/person/cars/model -> 3")),
 			"json-3.txt", new SimplePair("model", Set.of(
@@ -40,11 +40,11 @@ class JsonPathfinderTest {
 	@MethodSource("provideJson")
 	void findPath(String jsonContext, String testFileName) {
 		LOGGER.warn("content: {}", jsonContext);
-		String target = map.get(testFileName).target;
+		String target = EXPECTATIONS_MAP.get(testFileName).target;
 
 		var jsonPathFinder = JsonPathfinder.readyFor(target, jsonContext).findPath();
 
-		Set<String> expectedResults = map.get(testFileName).expectedResults;
+		Set<String> expectedResults = EXPECTATIONS_MAP.get(testFileName).expectedResults;
 		assertEquals(expectedResults.size(), jsonPathFinder.getPaths().size());
 		for (String currentExpectedResult : expectedResults) {
 			assertTrue(jsonPathFinder.getPaths().contains(currentExpectedResult));
