@@ -2,6 +2,7 @@ package blog.devmypills.kickoff.regex.formatter;
 
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,7 @@ public class UnixPathFormatter implements PathFormatter {
 				.entrySet()
 				.stream()
 				.map(pathEntry -> pathEntry.getKey() + " -> " + pathEntry.getValue())
-				.collect(Collectors.toSet());
+				.collect(Collectors.toCollection(TreeSet::new));
 	}
 
 }

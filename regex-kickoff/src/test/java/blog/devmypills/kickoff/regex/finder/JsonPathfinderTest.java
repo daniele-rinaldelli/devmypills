@@ -27,13 +27,16 @@ class JsonPathfinderTest {
 	}
 
 	private static final Map<String, SimplePair> EXPECTATIONS_MAP = Map.of(
-			"json-1.txt", new SimplePair("first", Set.of("/person/contact/mobile/first -> 1")),
-			"json-2.txt", new SimplePair("model", Set.of("/person/cars/model -> 3")),
-			"json-3.txt", new SimplePair("model", Set.of(
-					"/person/secondCar/model -> 1",
-					"/person/thirdCar/model -> 1",
-					"/person/firstCar/model -> 1"
-			))
+			"json-1.txt", new SimplePair("\"first\"", Set.of("/\"person\"/\"contact\"/\"mobile\"/\"first\" -> 1")),
+			"json-2.txt", new SimplePair("\"model\"", Set.of("/\"person\"/\"cars\"/\"model\" -> 3")),
+			"json-3.txt", new SimplePair(
+					"\"model\"",
+					Set.of(
+							"/\"person\"/\"secondCar\"/\"model\" -> 1",
+							"/\"person\"/\"thirdCar\"/\"model\" -> 1",
+							"/\"person\"/\"firstCar\"/\"model\" -> 1"
+					)
+			)
 	);
 
 	@ParameterizedTest
@@ -45,9 +48,9 @@ class JsonPathfinderTest {
 		var jsonPathFinder = JsonPathfinder.readyFor(target, jsonContext).findPath();
 
 		Set<String> expectedResults = EXPECTATIONS_MAP.get(testFileName).expectedResults;
-		assertEquals(expectedResults.size(), jsonPathFinder.getPaths().size());
+		assertEquals(expectedResults.size(), jsonPathFinder.getPathsAsSet().size());
 		for (String currentExpectedResult : expectedResults) {
-			assertTrue(jsonPathFinder.getPaths().contains(currentExpectedResult));
+			assertTrue(jsonPathFinder.getPathsAsSet().contains(currentExpectedResult));
 		}
 	}
 

@@ -11,9 +11,15 @@ public interface Pathfinder {
 
 	boolean isPathFound();
 
-	Set<String> getPaths(PathFormatter pathFormatter);
+	Set<String> getPathsAsSet(PathFormatter pathFormatter);
 
-	default Set<String> getPaths() {
-		return isPathFound() ? getPaths(new UnixPathFormatter()) : Set.of();
+	String getPathsAsString(PathFormatter pathFormatter);
+
+	default Set<String> getPathsAsSet() {
+		return isPathFound() ? getPathsAsSet(new UnixPathFormatter()) : Set.of();
+	}
+
+	default String getPathsAsString() {
+		return isPathFound() ? getPathsAsString(new UnixPathFormatter()) : "";
 	}
 }

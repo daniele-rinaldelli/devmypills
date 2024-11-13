@@ -20,8 +20,8 @@ public class JsonPathfinder implements Pathfinder {
 	private static final String TARGET_GROUP_NAME = "targetGroupName";
 	private static final String INTERNAL_TARGET_PLACEHOLDER = "<~._.~>";
 
-	private static final String REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS = "(\\{(?![^{}]*?\"" + TARGET_PLACEHOLDER + "\":)[^{}]*?})";
-	private static final String REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS = "(\"(?<" + TARGET_GROUP_NAME + ">[^\"]+)\")(?=:\\{.*\"" + TARGET_PLACEHOLDER + "\")";
+	private static final String REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS = "(\\{(?![^{}]*?" + TARGET_PLACEHOLDER + ":)[^{}]*?})";
+	private static final String REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS = "(?<" + TARGET_GROUP_NAME + ">\"[^\"]+\")(?=:\\{.*" + TARGET_PLACEHOLDER + ")";
 
 	private static final String KEY_USELESS_CONTAINER_FOR_TARGET = "keyUselessContainerForTarget";
 	private static final String KEY_CONTAINER_FOR_TARGET = "keyContainerForTarget";
@@ -58,7 +58,7 @@ public class JsonPathfinder implements Pathfinder {
 		String adjustedContext = adjustContext(initialContext);
 		resultPath = executeFindMultiMatch(initialTarget, adjustedContext);
 
-		LOGGER.info("Result: {}", resultPath);
+		LOGGER.debug("Result: {}", resultPath);
 		return this;
 	}
 
@@ -68,10 +68,11 @@ public class JsonPathfinder implements Pathfinder {
 	}
 
 	@Override
-	public Set<String> getPaths(PathFormatter pathFormatter) {
+	public Set<String> getPathsAsSet(PathFormatter pathFormatter) {
 		return pathFormatter.toSet(resultPath);
 	}
 
+	@Override
 	public String getPathsAsString(PathFormatter pathFormatter) {
 		return pathFormatter.toString(resultPath);
 	}
@@ -150,11 +151,9 @@ public class JsonPathfinder implements Pathfinder {
 			containers.add(group);
 		}
 
-		if (!containers.isEmpty()) {
-			containers.add(initialTarget);
-		}
+		containers.add(initialTarget);
 
-		LOGGER.info("Containers: {}", containers);
+		LOGGER.debug("Containers: {}", containers);
 		return containers;
 	}
 
