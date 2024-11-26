@@ -113,7 +113,7 @@ public class JsonPathfinder implements Pathfinder {
 
 		while (matcher.find() && replacementNumber > 0) {
 			context = matcher.replaceFirst(replacement);
-			matcher = pattern.matcher(context);
+			matcher.reset(context);
 			replacementNumber--;
 		}
 
@@ -140,7 +140,7 @@ public class JsonPathfinder implements Pathfinder {
 
 		while (matcher.find()) {
 			context = matcher.replaceAll("");
-			matcher = patternForUselessContainerObject.matcher(context);
+			matcher.reset(context);
 		}
 
 		Pattern patternForContainersObject = getPattern(target, KEY_CONTAINER_FOR_TARGET, KEY_CONTAINER_FOR_INTERNAL_TARGET);
