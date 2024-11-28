@@ -14,6 +14,12 @@ public class ConsolePrinter {
 		LOGGER.info("\n{} {}", command, " > ");
 	}
 
+	public static void printUserAction(String command, boolean enabled) {
+		if (enabled) {
+			LOGGER.info("\n{} {}", command, " > ");
+		}
+	}
+
 	public static void printOnNewLine(String param) {
 		LOGGER.info("\n{}", param);
 	}

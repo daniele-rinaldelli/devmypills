@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static blog.devmypills.kickoff.regex.menu.ApplicationMenu.menuContent;
@@ -21,12 +22,14 @@ public class App {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
+	private static final Predicate<String[]> EXISTS_CONTEXT_PARAM = args -> args.length > 0 && args[0].contains("-Dcontext=");
+
 	public static void main(String[] args) {
 		LOGGER.info("Regex Kickoff");
-		new App().execute();
+		new App().execute(args);
 	}
 
-	private void execute() {
+	private void execute(String[] args) {
 		try (Scanner scanner = new Scanner(System.in)) {
 
 			printDefaultMainMenu(menuContent());
@@ -38,11 +41,11 @@ public class App {
 				try {
 					switch (menuEntry) {
 						case MenuEntry.FIND_PROPERTY -> {
-
 							printUserAction("Input the property to find");
 							String target = getTarget(scanner);
-							printUserAction("Input the json file path");
-							String context = getContext(scanner);
+							printUserAction("Input the json file path", EXISTS_CONTEXT_PARAM.test(args));
+							String context = getContext(scanner, args);
+
 							var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
 
 							printOnNewLine("Paths:");
@@ -59,9 +62,7 @@ public class App {
 
 				menuEntry = getMenuEntryById(scanner);
 			}
-
 			println("Goodbye");
-
 		}
 	}
 
@@ -77,7 +78,12 @@ public class App {
 		return target;
 	}
 
-	private static String getContext(Scanner scanner) {
+	private static String getContext(Scanner scanner, String[] args) {
+
+		if (EXISTS_CONTEXT_PARAM.test(args)) {
+			return args[0].split("=")[1];
+		}
+
 		String path = scanner.nextLine().trim();
 		try (var bufferedReader = new BufferedReader(new FileReader(path))) {
 			return bufferedReader.lines().collect(Collectors.joining("\n"));

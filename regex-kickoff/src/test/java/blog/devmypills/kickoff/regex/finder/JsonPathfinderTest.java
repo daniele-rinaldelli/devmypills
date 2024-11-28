@@ -1,5 +1,6 @@
 package blog.devmypills.kickoff.regex.finder;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,6 +39,15 @@ class JsonPathfinderTest {
 					)
 			)
 	);
+
+	@Test
+	void findPathReturnNoResult() {
+		var jsonPathFinder = JsonPathfinder.readyFor(
+				"my-target",
+				"{\"prop1\":\"value1\"}")
+				.findPath();
+		assertEquals(0, jsonPathFinder.getPathsAsSet().size());
+	}
 
 	@ParameterizedTest
 	@MethodSource("provideJson")
