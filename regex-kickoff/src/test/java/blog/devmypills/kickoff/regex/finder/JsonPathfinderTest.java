@@ -37,7 +37,8 @@ class JsonPathfinderTest {
 							"/\"person\"/\"thirdCar\"/\"model\" -> 1",
 							"/\"person\"/\"firstCar\"/\"model\" -> 1"
 					)
-			)
+			),
+			"json-4.txt", new SimplePair("\"long description\"", Set.of("/\"weather\"/\"long description\" -> 1"))
 	);
 
 	@Test

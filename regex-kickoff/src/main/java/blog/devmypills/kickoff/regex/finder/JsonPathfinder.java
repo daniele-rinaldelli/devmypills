@@ -1,6 +1,7 @@
 package blog.devmypills.kickoff.regex.finder;
 
 import blog.devmypills.kickoff.regex.formatter.PathFormatter;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,18 +35,26 @@ public class JsonPathfinder implements Pathfinder {
 
 	private final Map<String, Pattern> patterns = new HashMap<>();
 
+	@Getter
 	private final String initialTarget;
+	@Getter
 	private final String initialContext;
+
+	private final String adjustedTarget;
+	private final String adjustedContext;
 
 	private JsonPathfinder(String target, String context) {
 		initialTarget = target;
 		initialContext = context;
 
-		patterns.put(KEY_USELESS_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
-		patterns.put(KEY_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, initialTarget)));
+		adjustedTarget = adjustTarget(target);
+		adjustedContext = adjustContext(initialContext);
+
+		patterns.put(KEY_USELESS_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, adjustedTarget)));
+		patterns.put(KEY_CONTAINER_FOR_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, adjustedTarget)));
 		patterns.put(KEY_USELESS_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_USELESS_CONTAINER_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
 		patterns.put(KEY_CONTAINER_FOR_INTERNAL_TARGET, Pattern.compile(REGEX_TEMPLATE_FOR_CONTAINERS_OBJECTS.replace(TARGET_PLACEHOLDER, INTERNAL_TARGET_PLACEHOLDER)));
-		patterns.put(KEY_TARGET, Pattern.compile(initialTarget));
+		patterns.put(KEY_TARGET, Pattern.compile(adjustedTarget));
 		patterns.put(KEY_INTERNAL_TARGET, Pattern.compile(INTERNAL_TARGET_PLACEHOLDER));
 	}
 
@@ -55,8 +64,7 @@ public class JsonPathfinder implements Pathfinder {
 
 	@Override
 	public Pathfinder findPath() {
-		String adjustedContext = adjustContext(initialContext);
-		resultPath = executeFindMultiMatch(initialTarget, adjustedContext);
+		resultPath = executeFindMultiMatch(adjustedTarget, adjustedContext);
 
 		LOGGER.debug("Result: {}", resultPath);
 		return this;
@@ -77,11 +85,28 @@ public class JsonPathfinder implements Pathfinder {
 		return pathFormatter.toString(resultPath);
 	}
 
+	private String adjustTarget(String target) {
+		return target.replaceAll("\\s+", "");
+	}
+
 	private String adjustContext(String context) {
-		return context.replace("[", "{")
-				.replace("]", "}")
-				.replaceAll("\\s", "")
-				.replaceAll("\\t", "");
+		var adjustedContextBuilder = new StringBuilder();
+		String minificationRegex = "(\\s+)|(\\[)|(])";
+		Matcher matcher = Pattern.compile(minificationRegex).matcher(context);
+		while (matcher.find()) {
+			if (matcher.group(1) != null) {
+				matcher.appendReplacement(adjustedContextBuilder, "");
+			}
+			if (matcher.group(2) != null) {
+				matcher.appendReplacement(adjustedContextBuilder, "{");
+			}
+			if (matcher.group(3) != null) {
+				matcher.appendReplacement(adjustedContextBuilder, "}");
+			}
+		}
+		matcher.appendTail(adjustedContextBuilder);
+		LOGGER.debug("adjusted context: {}", adjustedContextBuilder);
+		return adjustedContextBuilder.toString();
 	}
 
 	private List<List<String>> executeFindMultiMatch(String target, String context) {
@@ -159,7 +184,7 @@ public class JsonPathfinder implements Pathfinder {
 
 	private Pattern getPattern(String target, String keyTarget, String keyInternalTarget) {
 		return switch (target) {
-			case String t when t.equals(initialTarget) -> patterns.get(keyTarget);
+			case String t when t.equals(adjustedTarget) -> patterns.get(keyTarget);
 			case String t when t.equals(INTERNAL_TARGET_PLACEHOLDER) -> patterns.get(keyInternalTarget);
 			case null, default -> throw new RuntimeException("No suitable patter available");
 		};
