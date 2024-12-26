@@ -22,7 +22,7 @@ public class App {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
-	private static final Predicate<String[]> EXISTS_CONTEXT_PARAM = args -> args.length > 0 && args[0].contains("-Dcontext=");
+	private static final Predicate<String[]> EXISTS_CONTEXT_PARAM = args -> args.length == 1 && args[0].contains("-Dcontext=");
 
 	public static void main(String[] args) {
 		LOGGER.info("Regex Kickoff");
@@ -43,7 +43,7 @@ public class App {
 						case MenuEntry.FIND_PROPERTY -> {
 							printUserAction("Input the property to find");
 							String target = getTarget(scanner);
-							printUserAction("Input the json file path", EXISTS_CONTEXT_PARAM.test(args));
+							printUserAction("Input the json file path", !EXISTS_CONTEXT_PARAM.test(args));
 							String context = getContext(scanner, args);
 
 							var jsonPathFinder = JsonPathfinder.readyFor(target, context).findPath();
@@ -51,6 +51,7 @@ public class App {
 							printOnNewLine("Paths:");
 							printOnNewLine(jsonPathFinder.getPathsAsString());
 						}
+						case MenuEntry.HELP -> printOnNewLine(ApplicationMenu.HELP_CONTENT);
 						default -> println("Input is not valid\n");
 					}
 				} catch (IllegalArgumentException ex) {

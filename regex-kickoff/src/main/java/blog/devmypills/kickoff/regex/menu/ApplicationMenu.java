@@ -8,13 +8,28 @@ public class ApplicationMenu {
 			"""	
 			|--- MAIN MENU -----------------------------------
 			  1 > Find property
-			  2 > Exit
+			  2 > Help
+			  3 > Exit
 			|-------------------------------------------------
 			""";
 
+	public static final String HELP_CONTENT = """
+				The appliacation help you to find a property path inside a json file.
+				
+				It is necessary to specify the property you want to find comprhensive of double quotes (es. "propName")
+				
+				In case you wanto to specify the json content directly you can use -Dcontext input param otherwise you will be asked 
+				the json file path on local file system.
+				 
+				ex. java -jar App.jar -Dcontext={\"prop\": \"value\"} 
+				
+				The json file must addhere to the json specifications, no controls are made on json correctness at the time.  
+				""";
+
 	public enum MenuEntry {
 		FIND_PROPERTY(1),
-		EXIT(2),
+		HELP(2),
+		EXIT(3),
 		NOT_IMPLEMENTED(-1);
 
 		private final int entryId;
@@ -47,4 +62,5 @@ public class ApplicationMenu {
 				.findFirst()
 				.orElse(MenuEntry.NOT_IMPLEMENTED);
 	}
+
 }
