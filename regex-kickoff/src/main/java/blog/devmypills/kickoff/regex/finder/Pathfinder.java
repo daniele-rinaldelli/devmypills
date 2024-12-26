@@ -20,6 +20,6 @@ public interface Pathfinder {
 	}
 
 	default String getPathsAsString() {
-		return isPathFound() ? getPathsAsString(new UnixPathFormatter()) : "";
+		return isPathFound() ? getPathsAsString(new UnixPathFormatter()) : "No paths found";
 	}
 }
